@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ConnectKitProvider } from 'connectkit'
@@ -42,7 +43,9 @@ export default function RootLayout({
                 </div>
 
                 <div className="relative z-10 flex flex-col min-h-screen">
-                  <Header />
+                  <Suspense fallback={<div className="h-16 bg-black" />}>
+                    <Header />
+                  </Suspense>
                   <main className="flex-grow pt-16 pb-12">
                     {children}
                   </main>

@@ -1,11 +1,5 @@
 import { Metadata } from 'next';
-import dynamic from 'next/dynamic';
-
-// Disable SSR for HomePage - it uses client-only APIs (useSearchParams, wagmi, indexedDB)
-const HomePage = dynamic(() => import("@/components/HomePage"), {
-  ssr: false,
-  loading: () => <div className="min-h-screen bg-black" />
-});
+import HomePageWrapper from "@/components/HomePageWrapper";
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -51,5 +45,5 @@ export async function generateMetadata(
 }
 
 export default function Page() {
-  return <HomePage />;
+  return <HomePageWrapper />;
 }

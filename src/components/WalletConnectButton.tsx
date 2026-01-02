@@ -43,7 +43,7 @@ export default function WalletConnectButton({ fullWidth = false }: WalletConnect
                     <div className="flex flex-col items-start leading-none gap-1">
                         <span className="text-gray-700 font-mono text-[8px] tracking-[0.2em] uppercase font-bold">L1_SECURED</span>
                         <span className="font-mono text-white text-[12px] tabular-nums tracking-tighter">
-                            {balance?.formatted.slice(0, 5) || '0.00'}<span className="text-[#e2ff3d] ml-1 opacity-80">{balance?.symbol}</span>
+                            {balance?.formatted ? parseFloat(balance.formatted).toLocaleString('en-US', { maximumFractionDigits: 2 }) : '0.00'}<span className="text-[#e2ff3d] ml-1 opacity-80">{balance?.symbol}</span>
                         </span>
                     </div>
                     <ChevronDownIcon className={`w-3.5 h-3.5 text-[#e2ff3d] transition-transform duration-300 ${showDropdown ? 'rotate-180' : ''}`} />

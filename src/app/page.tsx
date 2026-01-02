@@ -2,13 +2,14 @@ import { Metadata } from 'next';
 import HomePage from "@/components/HomePage";
 
 type Props = {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export async function generateMetadata(
   { searchParams }: Props,
 ): Promise<Metadata> {
-  const ref = searchParams.ref;
+  const params = await searchParams;
+  const ref = params.ref;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://zugchain.org';
 
   const baseMetadata: Metadata = {

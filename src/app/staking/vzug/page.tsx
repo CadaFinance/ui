@@ -24,7 +24,6 @@ import {
     ArrowUpRight
 } from 'lucide-react';
 import { StakingHistory } from '@/components/StakingHistory';
-import Header from "@/components/Header";
 import { formatZug } from "@/lib/utils";
 import WalletModal from "@/components/WalletModal";
 import { STAKING_CONTRACT_VZUG, VZUG_TOKEN } from "@/contracts";
@@ -325,7 +324,6 @@ export default function TokenStakingPage() {
 
     return (
         <div className="min-h-screen bg-[#050505] text-white selection:bg-[#e2ff3d] selection:text-black font-sans">
-            <Header />
 
             <main className="container mx-auto max-w-7xl px-6 lg:px-8 py-6">
                 <motion.div initial="hidden" animate="visible" variants={containerVariants} className="space-y-6">

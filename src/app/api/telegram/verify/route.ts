@@ -39,7 +39,35 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Auth data expired' }, { status: 403 });
         }
 
-        // 3. Check Group Membership via Bot API
+        const telegramId = telegramUser.id.toString();
+        const telegramUsername = telegramUser.username || '';
+
+        // 3. User & Linkage Checks
+        // Check if this Telegram ID is already linked to ANY wallet
+        const existingLink = await db.query(
+            "SELECT address FROM users WHERE telegram_id = $1",
+            [telegramId]
+        );
+
+        let isAlreadyLinkedToSelf = false;
+
+        if (existingLink.rows.length > 0) {
+            const linkedAddress = existingLink.rows[0].address;
+
+            if (linkedAddress.toLowerCase() !== address.toLowerCase()) {
+                // Linked to SOMEONE ELSE
+                return NextResponse.json({
+                    success: false,
+                    message: `This Telegram account is already linked to another wallet (${linkedAddress.slice(0, 6)}...${linkedAddress.slice(-4)}).`,
+                    error: 'telegram_already_linked'
+                }, { status: 400 });
+            } else {
+                // Linked to SELF
+                isAlreadyLinkedToSelf = true;
+            }
+        }
+
+        // 4. Check Group Membership via Bot API
         const groupId = process.env.TELEGRAM_GROUP_ID;
         const userId = telegramUser.id;
 
@@ -53,36 +81,47 @@ export async function POST(request: Request) {
         }
 
         const status = chatMemberData.result.status;
-        const isMember = ['creator', 'administrator', 'member', 'restricted'].includes(status); // restricted is also a member usually
+        const isMember = ['creator', 'administrator', 'member', 'restricted'].includes(status);
 
         if (!isMember) {
             return NextResponse.json({
                 success: false,
-                message: 'You are not a member of the group yet. Please join via Safeguard first.',
-                isMember: false
+                isMember: false,
+                message: 'You are not a member of the group yet.',
+                joinUrl: 'https://t.me/zugchain'
             });
         }
 
-        // 4. Link Telegram to User in DB (Prevent farming)
-        const existingLink = await db.query(
-            "SELECT address FROM users WHERE twitter_id = $1 AND address != $2", // Reusing twitter_id column or creating new one?
-            // Wait, we should probably add a telegram_id column. For now let's reuse/add it.
-            // Let's assume we need to add telegram_id column first.
-            // For MVP, if schema update is hard, checking membership is enough if we trust the address.
-            // But to prevent one telegram account boosting multiple wallets, we should store it.
-            // Let's check schema first.
-            [userId.toString(), address]
-        );
+        // 5. Link & Reward (If not already done)
+        let pointsAwarded = 0;
 
-        // Let's UPDATE the user record
-        // First, check if column exists, if not we might need migration.
-        // Assuming we can just update for now or skipping persistence if schema is locked.
-        // Plan: Just verify for now to unblock.
+        if (!isAlreadyLinkedToSelf) {
+            // A. Update User Profile
+            await db.query(
+                "UPDATE users SET telegram_id = $1, telegram_username = $2, points = points + 150 WHERE address = $3",
+                [telegramId, telegramUsername, address]
+            );
+
+            // B. Audit Log
+            await db.query(
+                "INSERT INTO points_audit_log (address, points_awarded, task_type) VALUES ($1, $2, $3)",
+                [address, 150, 'MISSION_SOCIAL_TELEGRAM_JOIN']
+            );
+
+            pointsAwarded = 150;
+        } else {
+            // Just update username in case it changed
+            await db.query(
+                "UPDATE users SET telegram_username = $2 WHERE address = $3",
+                [telegramId, telegramUsername, address]
+            );
+        }
 
         return NextResponse.json({
             success: true,
             isMember: true,
-            telegram_username: telegramUser.username
+            telegram_username: telegramUsername,
+            points_awarded: pointsAwarded
         });
 
     } catch (error) {

@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useAccount, useDisconnect, useBalance } from 'wagmi'
-import { ChevronDownIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
+import { useAccount, useDisconnect, useBalance, useSwitchChain } from 'wagmi'
+import { ChevronDownIcon, ArrowRightOnRectangleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import WalletModal from './WalletModal'
+import { CHAIN_ID } from '../config'
 
 interface WalletConnectButtonProps {
     fullWidth?: boolean;
@@ -13,8 +14,9 @@ export default function WalletConnectButton({ fullWidth = false }: WalletConnect
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [showDropdown, setShowDropdown] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
-    const { address, isConnected } = useAccount()
+    const { address, isConnected, chainId } = useAccount()
     const { disconnect } = useDisconnect()
+    const { switchChain } = useSwitchChain()
     const { data: balance } = useBalance({ address })
 
     useEffect(() => {
@@ -34,6 +36,18 @@ export default function WalletConnectButton({ fullWidth = false }: WalletConnect
     }
 
     if (isConnected && address) {
+        if (chainId !== CHAIN_ID) {
+            return (
+                <button
+                    onClick={() => switchChain({ chainId: CHAIN_ID })}
+                    className="flex items-center gap-2 bg-red-500/10 border border-red-500/50 text-red-500 px-6 py-2 rounded-sm font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-red-500/20 transition-all tech-glow-red"
+                >
+                    <ExclamationTriangleIcon className="w-4 h-4" />
+                    <span>WRONG_NETWORK</span>
+                </button>
+            )
+        }
+
         return (
             <div className="relative" ref={dropdownRef}>
                 <button

@@ -103,4 +103,10 @@ async function optimizeDatabase() {
     }
 }
 
-optimizeDatabase();
+// Export for use as module
+module.exports = { optimizeDatabase };
+
+// Run directly if executed as main script
+if (require.main === module) {
+    optimizeDatabase();
+}

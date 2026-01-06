@@ -64,11 +64,12 @@ cat > /etc/redis/redis.conf << 'EOF'
 bind 0.0.0.0
 port 6381
 protected-mode yes
-requirepass ZugChain2024!
+requirepass Oh16ogZtxZtVgLx6yMpptvTYY8rhY6w11UlDwZQfjzGdxPcycO
 
 # Daemon / Systemd
-daemonize no
-supervised systemd
+daemonize yes
+supervised no
+pidfile /var/run/redis/redis-server.pid
 loglevel notice
 
 # Memory Management

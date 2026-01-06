@@ -41,13 +41,13 @@ LOG_FILE="/var/log/auto-compound-bot.log"
 # CONFIGURATION - EDIT THESE!
 # ==============================
 DEPLOYER_PRIVATE_KEY="${DEPLOYER_PRIVATE_KEY:-0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80}"
-DATABASE_URL="${DATABASE_URL:-postgres://blockscout:zugchain_explorer_2024@127.0.0.1:7433/zug_incentive}"
+DATABASE_URL="${DATABASE_URL:-postgres://blockscout:Oh16ogZtxZtVgLx6yMpptvTYY8rhY6w11UlDwZQfjzGdxPcycO@127.0.0.1:7433/zug_incentive}"
 RPC_URL="${RPC_URL:-https://rpc.zugchain.org}"
 
 # Contract Addresses (can be overridden)
-NATIVE_STAKING="${NATIVE_STAKING:-0x277DFA5c0C7037007716C4C417A1b08fC9B78f2c}"
-TOKEN_STAKING="${TOKEN_STAKING:-0x532EBcF976148D2531B7d75357694D2eEcA11a76}"
-VZUG_TOKEN="${VZUG_TOKEN:-0x4D5cef634f137f1899B5D2cD6B6766654e31925B}"
+NATIVE_STAKING="${NATIVE_STAKING:-0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512}" 
+TOKEN_STAKING="${TOKEN_STAKING:-0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0}"
+VZUG_TOKEN="${VZUG_TOKEN:-0x5FbDB2315678afecb367f032d93F642f64180aa3}"
 
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
@@ -57,7 +57,7 @@ echo ""
 
 # 1. Check for Node.js
 log_info "Checking for Node.js..."
-if ! command -v node &> /dev/null; then
+if ! command -v node &> /dev/null; then 
     log_warn "Node.js not found. Installing..."
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
     apt-get install -y nodejs

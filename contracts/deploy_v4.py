@@ -17,9 +17,9 @@ def load_env_file(filepath):
 load_env_file("c:/Users/DARK/Desktop/New folder (2)/frontend/.env.local")
 load_env_file("c:/Users/DARK/Desktop/New folder (2)/frontend/.env")
 
-RPC_URL = os.getenv("RPC_URL", "https://rpc1.zugchain.org")
+RPC_URL = os.getenv("RPC_URL", "https://rpc.zugchain.org")
 PRIVATE_KEY = os.getenv("PRIVATE_KEY") or os.getenv("DEPLOYER_PRIVATE_KEY")
-CHAIN_ID = 4545072
+CHAIN_ID = int(os.getenv("CHAIN_ID") or os.getenv("NEXT_PUBLIC_CHAIN_ID") or 1843932)
 
 if not PRIVATE_KEY:
     print("Error: PRIVATE_KEY or DEPLOYER_PRIVATE_KEY missing.")

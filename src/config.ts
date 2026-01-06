@@ -2,9 +2,9 @@ import { createConfig, http, cookieStorage, createStorage } from 'wagmi'
 import { getDefaultConfig } from 'connectkit'
 
 // Read from environment variables
-const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID)
-const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://rpc1.zugchain.org"
-const EXPLORER_URL = process.env.NEXT_PUBLIC_EXPLORER_URL || "https://explorer1.zugchain.org"
+export const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID)
+const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.zugchain.org"
+const EXPLORER_URL = process.env.NEXT_PUBLIC_EXPLORER_URL || "https://explorer.zugchain.org"
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "3a8170812b534d0ff9d794f19a901d64"
 
 const zugChain = {

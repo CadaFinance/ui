@@ -71,8 +71,8 @@ const { Pool } = require('pg');
 const Redis = require('ioredis');
 
 const CONFIG = {
-    REDIS_URL: 'redis://:ZugChain2024!@127.0.0.1:6381',
-    DB_URL: 'postgres://blockscout:zugchain_explorer_2024@127.0.0.1:7433/zug_incentive',
+    REDIS_URL: 'redis://:Oh16ogZtxZtVgLx6yMpptvTYY8rhY6w11UlDwZQfjzGdxPcycO@127.0.0.1:6381',
+    DB_URL: 'postgres://blockscout:Oh16ogZtxZtVgLx6yMpptvTYY8rhY6w11UlDwZQfjzGdxPcycO@127.0.0.1:7433/zug_incentive',
     QUEUE_NAME: 'IncentiveQueue',
     CONCURRENCY: 10,
 };
@@ -199,28 +199,74 @@ WORKER_EOF
 
 log_success "queue-worker.js created"
 
-# 5. Kill any existing worker
-pkill -f "node.*queue-worker.js" 2>/dev/null || true
+# 5. Install PM2 globally if not present
+log_info "Checking PM2..."
+if ! command -v pm2 &> /dev/null; then
+    log_info "Installing PM2 (Process Manager)..."
+    npm install -g pm2
+    log_success "PM2 installed"
+else
+    log_success "PM2 already installed"
+fi
 
-# 6. Start the worker
-log_info "Starting Queue Worker..."
-nohup node "$WORK_DIR/queue-worker.js" > "$LOG_FILE" 2>&1 &
-WORKER_PID=$!
+# 6. Create PM2 ecosystem config
+log_info "Creating PM2 config..."
+
+cat > "$WORK_DIR/ecosystem.config.js" << 'PM2_EOF'
+module.exports = {
+  apps: [{
+    name: 'queue-worker',
+    script: './queue-worker.js',
+    cwd: '/opt/zugchain-worker',
+    env: { NODE_ENV: 'production' },
+    instances: 1,
+    exec_mode: 'fork',
+    autorestart: true,
+    watch: false,
+    max_restarts: 10,
+    min_uptime: '10s',
+    restart_delay: 3000,
+    error_file: '/var/log/queue-worker-error.log',
+    out_file: '/var/log/queue-worker-out.log',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    merge_logs: true,
+    max_memory_restart: '500M',
+    listen_timeout: 10000,
+    kill_timeout: 5000
+  }]
+};
+PM2_EOF
+
+log_success "PM2 config created"
+
+# 7. Stop existing PM2 process if running
+log_info "Stopping existing worker..."
+pm2 delete queue-worker 2>/dev/null || true
+
+# 8. Start with PM2
+log_info "Starting Queue Worker with PM2..."
+cd "$WORK_DIR"
+pm2 start ecosystem.config.js
+
+# 9. Save and setup startup
+pm2 save
+pm2 startup systemd -u root --hp /root > /dev/null 2>&1 || true
 
 sleep 2
 
-if ps -p $WORKER_PID > /dev/null; then
-    log_success "Queue Worker started! (PID: $WORKER_PID)"
+if pm2 list | grep -q "queue-worker.*online"; then
+    log_success "Queue Worker started! (PID: $(pm2 pid queue-worker))"
     echo ""
     echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║   Queue Worker Running!                                      ║${NC}"
+    echo -e "${GREEN}║   Queue Worker Running! (PM2 Managed)                        ║${NC}"
     echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-    echo -e "  ${CYAN}PID:${NC}       $WORKER_PID"
-    echo -e "  ${CYAN}Log File:${NC}  $LOG_FILE"
-    echo -e "  ${CYAN}Command:${NC}   tail -f $LOG_FILE"
+    echo -e "  ${CYAN}Status:${NC}     pm2 status queue-worker"
+    echo -e "  ${CYAN}Logs:${NC}       pm2 logs queue-worker"
+    echo -e "  ${CYAN}Restart:${NC}    pm2 restart queue-worker"
+    echo -e "  ${CYAN}Monitor:${NC}    pm2 monit"
     echo ""
 else
-    log_error "Worker failed to start. Check: $LOG_FILE"
+    log_error "Worker failed to start. Check: pm2 logs queue-worker"
     exit 1
 fi

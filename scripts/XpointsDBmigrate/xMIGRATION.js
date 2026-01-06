@@ -48,10 +48,6 @@ async function migrateLegacyData() {
         for (let i = 0; i < users.length; i += BATCH_SIZE) {
             const batch = users.slice(i, i + BATCH_SIZE);
 
-            // Construct query dynamically
-            // INSERT INTO table (cols) VALUES ($1, $2, $3, $4), ($5, $6, $7, $8) ...
-            // ON CONFLICT (twitter_id) DO UPDATE SET total_points = EXCLUDED.total_points
-
             const values = [];
             const placeholders = [];
             let paramIndex = 1;
@@ -91,4 +87,10 @@ async function migrateLegacyData() {
     }
 }
 
-migrateLegacyData();
+// Export for use as module
+module.exports = { migrateLegacyData };
+
+// Run directly if executed as main script
+if (require.main === module) {
+    migrateLegacyData();
+}

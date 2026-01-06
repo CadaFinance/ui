@@ -11,7 +11,7 @@
 
 # Configurations
 DB_USER="blockscout"
-DB_PASSWORD="zugchain_explorer_2024"
+DB_PASSWORD="Oh16ogZtxZtVgLx6yMpptvTYY8rhY6w11UlDwZQfjzGdxPcycO"
 DB_NAME="zug_incentive"
 CONTAINER_NAME="frontend-db"
 HOST_PORT="7433"
